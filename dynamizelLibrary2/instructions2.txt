@@ -1,0 +1,38 @@
+How to use this library:
+You will need the PySerial Library for serial communication. Refer to the document found at:
+http://pyserial.sourceforge.net/
+
+First thing you should check is whether you can find your servos:
+
+python lib_robotis_hex.py -d /dev/ttyUSB0 --scan
+
+This should output something like "Found a servo @ ID x"
+
+An example python script to set a motor to a given position:
+
+from lib_robotis_hex import *
+dm = USB2Dynamixel_Device('/dev/ttyUSB0') #Establish serial communication for LINUX BOXES
+'''
+If you are using a Windows machine, you need to determine which COM
+port the USB2Dynamixel dongle is taking up. Once you determine this, replace the 2nd line with
+dm = USB2Dynamixel_Device(dev_name = '\\.\COM3')
+if your com port is port 3. if this fails, try a different com port before
+trying to connnect to the one you found through device manager. The first time
+I ran it with the correct port, it failed, so this is to be expected.
+'''
+s1 = Robotis_Servo( dm, 1) # Initialize servo one. Yoou need to do this for every servo you use
+s1.move_angle( 1, blocking = False) # Move angle command moves servo to specified command IN RADIANS. The blocking argument specifies whether other servos can run before this \
+servo has finished moving. Blocking = False allows servos to run in parallel.
+
+Lastly, when setting up the servos, the library looks for servo configurations stored in servo_config.py. If it does not find this, it uses the default configuration. An examp\
+le servo_config.py file
+
+servo_param = {
+    1: {
+       'home_encoder': 404, # these servos have 4096 ticks
+       'max_ang': 1, # in radians
+       'min_ang': -1 # in radians
+       }
+}
+
+
