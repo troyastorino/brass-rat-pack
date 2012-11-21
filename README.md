@@ -12,3 +12,4 @@ Or with Debian/Ubuntu, you can get it through apt.
 
     $ sudo apt-get install python-serial
 
+Feel free to add important info to the readme that will for setup, conceptual understanding, etc.
