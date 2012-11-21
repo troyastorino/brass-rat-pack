@@ -42,7 +42,7 @@ import math
 class USB2Dynamixel_Device():
     ''' Class that manages serial port contention between servos on same bus
     '''
-    def __init__( self, dev_name = '/dev/ttyUSB0', baudrate = 400000 ):
+    def __init__( self, dev_name = '/dev/ttyUSB0', baudrate = 400000):
         try:
             self.dev_name = string.atoi( dev_name ) # stores the serial port as 0-based integer for Windows
         except:
@@ -193,8 +193,8 @@ class Robotis_Servo():
             sign etc. might vary with how the servo is mounted.
         '''
         data = self.read_address( 0x28, 2 )
-        load = data[0] + (data[1] >> 6) * 256
-        if data[1] >> 2 & 1 == 0:
+        load = data[0] + (data[1] % 4) * 256
+        if data[1] / 4 == 1:
             return -1.0 * load
         else:
             return 1.0 * load
@@ -257,11 +257,77 @@ class Robotis_Servo():
     def disable_torque(self):
         return self.write_address(0x18, [0])
 
+    ### Next 5 methods written by Troy (aka don't necessarily trust)
+    def set_torque_limit(self, torque_percentage):
+        '''Sets the percentage of the maximum available torque to use'''
+        if torque_percentage > 1 or torque_percentage < 0:
+            raise Exception('Invalid torque percentage. Must be between 0 and 1')
+
+        # must be between 0 and 1023
+        n = int(round(torque_percentage * 1023))
+
+        hi,lo = n / 256, n % 256
+
+        return self.write_address(0x22, [lo,hi])
+    
+    def enable_torque_control_mode(self):
+        '''When in torque control mode, servo controlled with set_torque'''
+        return self.write_address(0x46, [1])
+
+    def disable_torque_control_mode(self):
+        return self.write_address(0x46, [0])
+
+    def set_torque(self, torque, supply_voltage=12):
+        ''' torque - in N.m.
+            supply_voltage - voltage of the power supply (in Volts). supports 11.1, 12, 14.8
+        '''
+        # amperage required calculated from the stall torque in the Robotis
+        # mx-64 documentation
+        if supply_voltage == 11.1:
+            amps = torque * 3.9 / 5.5
+        elif supply_voltage == 12:
+            amps = torque * 4.1 / 5.0
+        elif supply_voltage == 14.8:
+            amps = torque * 5.2 / 7.3
+        else:
+            raise Exception("supply_voltage provided is not supported.")
+
+        milliamps = amps * 1e3
+        val = int(round(milliamps / 4.5)) # the unit is 4.5 milliamps
+
+        # flip direction if motor is flipped
+        if self.settings['flipped']:
+            val = val * -1
+
+        if val < 0:
+            hi,lo = abs(val) / 256 + 4, abs(val) % 256
+        else:
+            hi,lo = val / 256, val % 256
+            
+        return self.write_address(0x47, [lo,hi])
+
+    def read_angvel(self):
+        ''' returns the angular velocity in radians/sec'''
+        data = self.read_address(0x26, 2)
+
+        val = data[0] + (data[1] % 4) * 256
+        rpm = val * 0.11
+        angvel = rpm * 2.0 * math.pi / 60.0
+
+        # check if it is a negative or positive value
+        if data[1] / 4 == 1:
+            angvel = -1.0 * angvel
+
+        if self.settings['flipped']:
+            return -1.0 * angvel
+        else:
+            return angvel
+        
     def set_angvel(self, angvel):
         ''' angvel - in rad/sec
         '''     
         rpm = angvel / (2 * math.pi) * 60.0
-        angvel_enc = int(round( rpm / 0.111 ))
+        angvel_enc = int(round( rpm / 0.114 ))
         if angvel_enc<0:
             hi,lo = abs(angvel_enc) / 256 + 4, abs(angvel_enc) % 256
         else:
@@ -410,7 +476,7 @@ if __name__ == '__main__':
     p.add_option('--id', action='store', type='int', dest='id',
                  help='id of servo to connect to, [default = 1]', default=1)
     p.add_option('--baud', action='store', type='int', dest='baud',
-                 help='baudrate for USB2Dynamixel connection [default = 57600]', default=57600)
+                 help='baudrate for USB2Dynamixel connection [default = 400000]', default=400000)
 
     opt, args = p.parse_args()
 

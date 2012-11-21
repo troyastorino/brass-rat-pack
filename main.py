@@ -8,7 +8,7 @@ routine = Routine(DEAD_HANG, [DEAD_HANG_TO_IRON_CROSS])
 
 if __name__ == "__main__":
     print "Starting routine in the hold", routine.init_hold.name
-    
+
     while True:
         # get the state estimate
         (q, q_dot) = current_state_estimate()

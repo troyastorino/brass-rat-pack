@@ -20,7 +20,7 @@ class Move(object):
         self.controller = controller
         
 class DeadHangToIronCrossController(MoveController):
-    delta_theta = 0.01
+    delta_theta = 0.1
     
     def __init__(self):
         super(DeadHangToIronCrossController, self).__init__(DEAD_HANG, IRON_CROSS)

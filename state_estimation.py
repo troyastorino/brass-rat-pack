@@ -2,15 +2,10 @@
 the current state.  q"""
 
 import math
+from servo_config import s1, s2, s3
 
 # TODO: actually do estimation of state variables
 
-theta_1 = 0 # shoulder rotation (in same plane as hip)
-theta_1_dot = 0 
-theta_2 = 0 # hip rotation
-theta_2_dot = 0    
-theta_3 = -math.pi/2 # shoulder separation
-theta_3_dot = 0    
 phi = 0 # ring to arm angle
 phi_dot = 0    
 psi = 0 # ring to platform angle
@@ -18,6 +13,16 @@ psi_dot = 0
 
 def current_state_estimate():
     """Returns the current best estimate of q, q_dot"""
+
+    # read angular positions
+    theta_1 = s1.read_angle()
+    theta_2 = s2.read_angle()
+    theta_3 = s3.read_angle()
+
+    # read angular velocities
+    theta_1_dot = s1.read_angvel()
+    theta_2_dot = s2.read_angvel()
+    theta_3_dot = s3.read_angvel()
 
     # Package q and q_dot as tuples
     q = theta_1, theta_2, theta_3, phi, psi
