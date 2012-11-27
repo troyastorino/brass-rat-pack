@@ -1,23 +1,9 @@
 import sys
 
-class MotorCommand(object):
-    """Describes the command that can be sent to a single servo motor"""
-    def __init__(self, theta, omega, tau):
-        self.theta = theta
-        self.omega = omega
-        self.tau = tau
-
-class Command(object):
-    """Describes the command for control of all 3 servo motors"""
-    def __init__(self, motor_1, motor_2, motor_3):
-        self.motor_1 = motor_1
-        self.motor_2 = motor_2
-        self.motor_3 = motor_3
-
 class Controller(object):
     """Abstract controller class"""
     def control(self, q, q_dot):
-        """Given the generalized state for the system, returns a Command to be
+        """Given the generalized state for the system, returns a command_map to be
            sent to the motors."""
         raise NotImplementedError("Must define a control method")
                    

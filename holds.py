@@ -25,10 +25,10 @@ class SimpleHoldController(HoldController):
         self.theta_3 = theta_3
         
     def control(self, q, q_dot):
-        motor_1_command = MotorCommand(self.theta_1, 0, 0.7)
-        motor_2_command = MotorCommand(self.theta_2, 0, 0.7)
-        motor_3_command = MotorCommand(self.theta_3 , 0, 0.7)        
-        return Command(motor_1_command, motor_2_command, motor_3_command)
+        return generate_command_map(
+            generate_servo_command(self.theta_1, torque_percentage = 0.7)
+            generate_servo_command(self.theta_2, torque_percentage = 0.7)
+            generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
     def is_stable(self, q, q_dot):
         eps = 0.01

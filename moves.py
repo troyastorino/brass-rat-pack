@@ -32,10 +32,13 @@ class DeadHangToIronCrossController(MoveController):
         if (q[2] < self.hold_to.controller.theta_3):
             # increase theta_3 by a small amount
             theta_3 = q[2] + self.delta_theta
-            return Command(
-                MotorCommand(self.hold_to.controller.theta_1, 0, 0.7),
-                MotorCommand(self.hold_to.controller.theta_2, 0, 0.7),
-                MotorCommand(theta_3, 0, 0.7))
+            
+            return generate_command_map(
+                generate_servo_command(self.hold_to.controller.theta_1,
+                                       torque_percentage = 0.7)
+                generate_servo_command(self.hold_to.controller.theta_2,
+                                       torque_percentage = 0.7)
+                generate_servo_command(theta_3, torque_percentage = 0.7))
         else:
             self.done = True
             return self.hold_to.controller.control(q, q_dot)
