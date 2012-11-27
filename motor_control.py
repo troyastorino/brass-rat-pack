@@ -24,13 +24,14 @@ TORQUE_KEY = 'torque'
 # {'motor_1': {'control_mode': 'servo',
 #              'theta': 0,
 #              'angvel': .2,
-#              'torque_percentage: 1'},
-#  'motor_2': {'control_mode': 'servo',
-#              'theta': 0,
-#              'angvel': .4,
 #              'torque_percentage: .8'},
+#  'motor_2': {'control_mode': 'servo',
+#              'theta': 0},
 #  'motor_3': {'control_mode': 'torque',
 #              'torque': 14}}
+#
+# For servo control model, theta and angvel are optional; if not provided,
+# torque_percentage will be set ot 1 and angvel will not be specified
 
 ## utility functions for generating motor commands
 def generate_servo_command(theta, angvel=None, torque_percentage=1):
@@ -67,10 +68,7 @@ def send_command(command_map):
 
         # execute control depending on the mode
         if mode == SERVO_CONTROL:
-            # if in torque control mode, switch out of it
-            if servo.in_torque_control_mode:
-                servo.disable_torque_control_mode()
-                servo.in_torque_control_mode = False
+            servo.establish_torque_control_mode(False)e
 
             # get the command keys
             theta = cmd.get(THETA_KEY)
@@ -83,30 +81,21 @@ def send_command(command_map):
 
             # if desired, set the torque limit
             if torque_percentage:
-                if torque_percentage != servo.current_torque_limit:
-                    servo.set_torque_limit(torque_percentage)
-                    servo.current_torque_limit = torque_percentage
+                servo.establish_torque_limit(torque_percentage)
             else:
-                if servo.current_torque_limit != 1:
-                    servo.set_torque_limit(1)
-                    servo.current_torque_limit = 1
+                servo.establish_torque_limit(1)
 
             # command the servo to move
             servo.move_angle(theta, angvel=angvel, blocking=False)
 
         elif mode == TORQUE_CONTROL:
             # if not in torque control mode, switch into it
-            if not servo.in_torque_control_mode:
-                servo.enable_torque_control_mode()
-                servo.in_torque_control_mode = True
+            servo.establish_torque_control_mode(True)
 
             torque = cmd.get(TORQUE_KEY)
 
             if not torque:
                 raise Exception('Must specify the torque in torque control mode')
-
-            # TODO: maybe issue for torque control mode if torque limit has been
-            # previously set?
 
             # send the command
             servo.set_torque(torque)
