@@ -1,4 +1,5 @@
-from routine import Controller, MotorCommand, Command
+from routine import Controller
+from motor_control import generate_command_map, generate_servo_command, generate_torque_command
 
 import math
 
@@ -26,8 +27,8 @@ class SimpleHoldController(HoldController):
         
     def control(self, q, q_dot):
         return generate_command_map(
-            generate_servo_command(self.theta_1, torque_percentage = 0.7)
-            generate_servo_command(self.theta_2, torque_percentage = 0.7)
+            generate_servo_command(self.theta_1, torque_percentage = 0.7),
+            generate_servo_command(self.theta_2, torque_percentage = 0.7),
             generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
     def is_stable(self, q, q_dot):

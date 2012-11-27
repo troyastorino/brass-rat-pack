@@ -51,12 +51,12 @@ def generate_command_map(motor_1, motor_2, motor_3):
         
 def send_command(command_map):
     # get motor commands
-    motor_1 = command.get(MOTOR_1_KEY)
-    motor_2 = command.get(MOTOR_2_KEY)
-    motor_3 = command.get(MOTOR_3_KEY)
+    motor_1 = command_map.get(MOTOR_1_KEY)
+    motor_2 = command_map.get(MOTOR_2_KEY)
+    motor_3 = command_map.get(MOTOR_3_KEY)
 
     # make sure we have command maps for all of the motors
-    if not motor_1 and motor_2 and motor_3:
+    if motor_1 == None or motor_2 == None or motor_3 == None:
         raise Exception('In a command map must specify commands for each motor')
 
     # create a list of command-servo tuples
@@ -64,11 +64,11 @@ def send_command(command_map):
 
     for cmd, servo in cmd_list:
         # get the command mode
-        mode = cmd.get(CONTROL_MODE_KEY)        
+        mode = cmd.get(CONTROL_MODE_KEY)
 
         # execute control depending on the mode
         if mode == SERVO_CONTROL:
-            servo.establish_torque_control_mode(False)e
+            servo.establish_torque_control_mode(False)
 
             # get the command keys
             theta = cmd.get(THETA_KEY)
@@ -76,7 +76,7 @@ def send_command(command_map):
             torque_percentage = cmd.get(TORQUE_LIMIT_KEY)
 
             # make sure a theta is specified
-            if not theta:
+            if theta == None:
                 raise Exception('Must specify a theta to move to')
 
             # if desired, set the torque limit
@@ -94,11 +94,11 @@ def send_command(command_map):
 
             torque = cmd.get(TORQUE_KEY)
 
-            if not torque:
+            if torque == None:
                 raise Exception('Must specify the torque in torque control mode')
 
             # send the command
             servo.set_torque(torque)
-    else:
-        raise Exception('Must specify the control mode as either servo ' +
-                        'control or torque control')
+        else:
+            raise Exception('Must specify the control mode as either servo ' +
+                            'control or torque control')

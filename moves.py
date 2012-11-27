@@ -1,4 +1,5 @@
-from routine import Controller, MotorCommand, Command
+from routine import Controller
+from motor_control import generate_command_map, generate_servo_command, generate_torque_command
 from holds import *
 
 class MoveController(Controller):
@@ -35,9 +36,9 @@ class DeadHangToIronCrossController(MoveController):
             
             return generate_command_map(
                 generate_servo_command(self.hold_to.controller.theta_1,
-                                       torque_percentage = 0.7)
+                                       torque_percentage = 0.7),
                 generate_servo_command(self.hold_to.controller.theta_2,
-                                       torque_percentage = 0.7)
+                                       torque_percentage = 0.7),
                 generate_servo_command(theta_3, torque_percentage = 0.7))
         else:
             self.done = True

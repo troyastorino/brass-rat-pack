@@ -39,7 +39,7 @@ import thread
 import sys, optparse
 import math
 
-class USB2Dynamixel_Device():
+class USB2Dynamixel_Device(object):
     ''' Class that manages serial port contention between servos on same bus
     '''
     def __init__( self, dev_name = '/dev/ttyUSB0', baudrate = 400000):
@@ -92,7 +92,7 @@ class USB2Dynamixel_Device():
 
 
 
-class Robotis_Servo():
+class Robotis_Servo(object):
     ''' Class to use a robotis RX-28 or RX-64 servo.
     '''
     def __init__(self, USB2Dynamixel, servo_id, series = None ):
