@@ -17,26 +17,31 @@ servo_param = {
 
 dm = USB2Dynamixel_Device('/dev/ttyUSB0')
 
-# define functions for establishing torque_control_mode and torque_limit in the
-# Robotis_Servo class. Functions do not send unnecessary commands to the servo,
-# and only sends necessary commands
-def establish_torque_limit(self, limit):
-    try:
+# extend Robotis_Servo class to have new methods for establishing
+# torque_control_mode and torque_limit. Methods do not send unnecessary commands
+# to the servo
+class Servo(Robotis_Servo):
+    def __init__(self, dev_name = '/dev/ttyUSB0', baudrate = 400000):
+        """Extended init makes sure the servos are in the state we expect
+        them to be at startup"""
+        super(Servo, self).__init__(dev_name, baudrate)
+
+        self.disable_torque_control_mode()
+        self.in_torque_control_mode = False
+
+        self.set_torque_limit(1)
+        self.current_torque_limit = 1
+        
+    def establish_torque_limit(self, limit):
+        """limit should be of the same form as that passed to
+        set_torque_limit"""
         if self.current_torque_limit != limit:
             self.set_torque_limit(limit)
             self.current_torque_limit = limit
-    # if current_torque_limit hasn't been defined yet
-    except AttributeError:
-        # initialize current_torque_limit to something that will not evaluate to
-        # limit, to make sure the torque limit is properly set on first use
-        self.current_torque_limit = not limit
-        self.establish_torque_limit(limit)
 
-def establish_torque_control_mode(self, state):
-    """state is True if setting to torque control mode, or False if setting to
-       servo mode
-    """
-    try:
+    def establish_torque_control_mode(self, state):
+        """state is True if setting to torque control mode, or False if setting to
+        servo mode"""
         # move out of torque control mode
         if self.in_torque_control_mode and not state:
             self.disable_torque_control_mode()
@@ -47,23 +52,6 @@ def establish_torque_control_mode(self, state):
             self.enable_torque_control_mode()
             self.in_torque_control_mode = True
 
-    # if in_torque_control_mode hasn't been defined yet
-    except AttributeError:
-        # initialize in_torque_control_mode to the opposite of the desired state
-        # to make sure that torque control mode is properly enabled or disabled
-        self.in_torque_control_mode = not state
-        self.establish_torque_control_mode(state)
-        
-# monkey patch the new functions to the Robotis_Servo class
-Robotis_Servo.establish_torque_control_mode = establish_torque_control_mode
-Robotis_Servo.establish_torque_limit = establish_torque_limit
-
-s1 = Robotis_Servo(dm, 1)
-s2 = Robotis_Servo(dm, 2)
-s3 = Robotis_Servo(dm, 3)
-
-# do initialization setup.  Make sure they are in the configuration we are
-# expecting. Also add in state variables
-for servo in [s1, s2, s3]:
-    servo.establish_torque_control_mode(False)
-    servo.establish_torque_limit(1)
+s1 = Servo(dm, 1)
+s2 = Servo(dm, 2)
+s3 = Servo(dm, 3)
