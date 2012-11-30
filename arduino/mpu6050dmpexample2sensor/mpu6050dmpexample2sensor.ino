@@ -207,13 +207,13 @@ void setup() {
 
 void loop() {
 
-  
+
   // if programming failed, don't try to do anything
   if (!dmpReady || !dmp2Ready) return;
 
   // wait for MPU interrupt or extra packet(s) available
   while (!mpuInterrupt && fifoCount < packetSize && !mpu2Interrupt && fifoCount2 < packetSize) {
-     fifoCount = mpu.getFIFOCount();
+    fifoCount = mpu.getFIFOCount();
   }
   // reset interrupt flags and get INT_STATUS bytes
   mpuInterrupt = false;
@@ -241,75 +241,64 @@ void loop() {
     readTrigger= Serial.read();
   }
 
-  
-  
-  
-  
-    // wait for correct available data length, should be a VERY short wait
-    while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  // wait for correct available data length, should be a VERY short wait
+  while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
 
-    
-    while (fifoCount > packetSize){ 
-    // read a packet from FIFO
-    mpu.getFIFOBytes(fifoBuffer, packetSize);
+  // read a packet from FIFO
+  mpu.getFIFOBytes(fifoBuffer, packetSize);
+  mpu.resetFIFO();
 
-    // track FIFO count here in case there is > 1 packet available
-    // (this lets us immediately read more without waiting for an interrupt)
-    fifoCount -= packetSize;
-    
-    if(readTrigger==1){
-      mpu.dmpGetQuaternion(&q, fifoBuffer);
-      mpu.dmpGetGravity(&gravity, &q);
-      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-      mpu.dmpGetGyro(&gyro, fifoBuffer);
-      Serial.print("ypr1\t");
-      Serial.print(ypr[0] * 180/M_PI);
-      Serial.print("\t");
-      Serial.print(ypr[1] * 180/M_PI);
-      Serial.print("\t");
-      Serial.print(ypr[2] * 180/M_PI);
-      Serial.print("\t gyro1\t");
-      Serial.print(gyro.x);
-      Serial.print("\t");
-      Serial.print(gyro.y);
-      Serial.print("\t");
-      Serial.println(gyro.z);
-      readTrigger=0;
-    }
-    }
-  
-  
-    while (fifoCount2 < packetSize) fifoCount2 = mpu2.getFIFOCount();
+  if(readTrigger==1){
+    mpu.dmpGetQuaternion(&q, fifoBuffer);
+    mpu.dmpGetGravity(&gravity, &q);
+    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    mpu.dmpGetGyro(&gyro, fifoBuffer);
+    Serial.print("ypr1\t");
+    Serial.print(ypr[0] * 180/M_PI);
+    Serial.print("\t");
+    Serial.print(ypr[1] * 180/M_PI);
+    Serial.print("\t");
+    Serial.print(ypr[2] * 180/M_PI);
+    Serial.print("\t gyro1\t");
+    Serial.print(gyro.x);
+    Serial.print("\t");
+    Serial.print(gyro.y);
+    Serial.print("\t");
+    Serial.println(gyro.z);
+    readTrigger=0;
+  }
 
-    // read a packet from FIFO
-    while(fifoCount2 > packetSize) {
-    mpu2.getFIFOBytes(fifoBuffer, packetSize);
+  while (fifoCount2 < packetSize) fifoCount2 = mpu2.getFIFOCount();
 
-    // track FIFO count here in case there is > 1 packet available
-    // (this lets us immediately read more without waiting for an interrupt)
-    fifoCount2 -= packetSize;
-    
-    if(readTrigger==2){
-      mpu2.dmpGetQuaternion(&q2, fifoBuffer);
-      mpu2.dmpGetGravity(&gravity2, &q2);
-      mpu2.dmpGetYawPitchRoll(ypr2, &q2, &gravity2);
-      mpu2.dmpGetGyro(&gyro2, fifoBuffer);
-      Serial.print("ypr2\t");
-      Serial.print(ypr2[0] * 180/M_PI);
-      Serial.print("\t");
-      Serial.print(ypr2[1] * 180/M_PI);
-      Serial.print("\t");
-      Serial.print(ypr2[2] * 180/M_PI);
-      Serial.print("\t gyro2\t");
-      Serial.print(gyro2.x);
-      Serial.print("\t");
-      Serial.print(gyro2.y);
-      Serial.print("\t");
-      Serial.println(gyro2.z);
-      readTrigger=0;
-    }
-    }
+  // read a packet from FIFO
+
+  mpu2.getFIFOBytes(fifoBuffer, packetSize);
+  mpu2.resetFIFO();
+
+  if(readTrigger==2){
+    mpu2.dmpGetQuaternion(&q2, fifoBuffer);
+    mpu2.dmpGetGravity(&gravity2, &q2);
+    mpu2.dmpGetYawPitchRoll(ypr2, &q2, &gravity2);
+    mpu2.dmpGetGyro(&gyro2, fifoBuffer);
+    Serial.print("ypr2\t");
+    Serial.print(ypr2[0] * 180/M_PI);
+    Serial.print("\t");
+    Serial.print(ypr2[1] * 180/M_PI);
+    Serial.print("\t");
+    Serial.print(ypr2[2] * 180/M_PI);
+    Serial.print("\t gyro2\t");
+    Serial.print(gyro2.x);
+    Serial.print("\t");
+    Serial.print(gyro2.y);
+    Serial.print("\t");
+    Serial.println(gyro2.z);
+    readTrigger=0;
+  }
 }
+
+
+
+
 
 
 
