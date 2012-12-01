@@ -14,6 +14,9 @@ psi_dot = 0
 def current_state_estimate():
     """Returns the current best estimate of q, q_dot"""
 
+    # read from arduino here!
+        
+
     # read angular positions
     theta_1 = s1.read_angle()
     theta_2 = s2.read_angle()
