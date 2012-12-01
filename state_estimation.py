@@ -6,9 +6,9 @@ from servo_config import s1, s2, s3
 
 # TODO: actually do estimation of state variables
 
-phi = 0 # ring to arm angle
+phi = 0 # ring to platform angle
 phi_dot = 0    
-psi = 0 # ring to platform angle
+psi = 0 # arm angle
 psi_dot = 0
 
 def current_state_estimate():

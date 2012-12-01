@@ -1,5 +1,6 @@
 from routine import Controller
 from motor_control import generate_command_map, generate_servo_command, generate_torque_command
+from common import total_energy
 
 import math
 
@@ -32,7 +33,7 @@ class SimpleHoldController(HoldController):
             generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
     def is_stable(self, q, q_dot):
-        eps = .01
+        eps = 0.01
         
         # make sure all of the generalized coordinates are no longer moving
         for q_i_dot in q_dot:
@@ -45,9 +46,63 @@ class SimpleHoldController(HoldController):
         else:
             return False
 
-### Hold instances below here
-DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, 0))
+        
+class DampingController(HoldController):
+    """Simple illustration of a controller class"""
+    def __init__(self, theta_1, theta_2, theta_3):
+        """theta_1, theta_1, theta_3 are the target angles for the motors"""
+        self.theta_1 = theta_1
+        self.theta_2 = theta_2
+        self.theta_3 = theta_3
+        self.s1 = 1
+        self.s2 = 0
+        self.TEbp = TEbp
+        self.dtheta_1 = 0.00001
+        self.dtheta_2 = 0.00001
+        self.max_theta_1 = pi/2
+        self.max_theta_2 = pi/2
 
-IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, math.pi/2))
+
+        self.pdTE = 0.001
+        self.ndTE = 0.001
+        self.dE = 0.001
+        self.TEtarget = minPE+self.dE
+        self.TE = total_energy(q,q_dot)
+        
+         
+    def control(self, q, q_dot):
+        self.TE = total_energy(q,q_dot)
+
+        
+        if (self.TE > self.TEbp+self.pdTE):
+               self.s1 = -self.s1
+               self.s2 = -self.s2
+               self.TEbp=self.TEbp+pdTE
+        
+            
+        if(self.TE< self.TEbp-self.ndTE):
+               self.TEbp = self.TEbp-self.ndTE;
+               
+        if(self.theta_1*s1 < self.max_theta_1)
+        self.theta_1 = self.theta_1+self.s1*self.dtheta_1
+
+        if(self.theta_2*s2 < self.max_theta_2)
+        self.theta_2 = self.theta_2+self.s2*self.dtheta_2
+               
+        return generate_command_map(
+            generate_servo_command(self.theta_1, torque_percentage = 0.7),
+            generate_servo_command(self.theta_2, torque_percentage = 0.7),
+            generate_servo_command(self.theta_3, torque_percentage = 0.7))
+        
+    def is_stable(self, q, q_dot):  
+          if (self.TE < self.TEtarget):
+               return True
+          else
+               return False
+
+### Hold instances below here
+DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, -math.pi/2))
+
+IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, 0))
 
                  
