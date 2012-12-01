@@ -248,24 +248,27 @@ void loop() {
   mpu.getFIFOBytes(fifoBuffer, packetSize);
   mpu.resetFIFO();
 
+// Serial output is given in format:
+// ypr1[1]  ypr1[2]  ypr1[3]  gyro1.x  gyro1.y  gyro1.z  ypr2[1]  ypr2[2]  ypr2[3]  gyro2.x  gyro2.y  gyro2.z
+
   if(readTrigger==1){
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
     mpu.dmpGetGyro(&gyro, fifoBuffer);
-    Serial.print("ypr1\t");
+    
     Serial.print(ypr[0] * 180/M_PI);
     Serial.print("\t");
     Serial.print(ypr[1] * 180/M_PI);
     Serial.print("\t");
     Serial.print(ypr[2] * 180/M_PI);
-    Serial.print("\t gyro1\t");
+    Serial.print("\t");
     Serial.print(gyro.x);
     Serial.print("\t");
     Serial.print(gyro.y);
     Serial.print("\t");
-    Serial.println(gyro.z);
-    readTrigger=0;
+    Serial.print(gyro.z);
+   
   }
 
   while (fifoCount2 < packetSize) fifoCount2 = mpu2.getFIFOCount();
@@ -275,18 +278,18 @@ void loop() {
   mpu2.getFIFOBytes(fifoBuffer, packetSize);
   mpu2.resetFIFO();
 
-  if(readTrigger==2){
+  if(readTrigger==1){
     mpu2.dmpGetQuaternion(&q2, fifoBuffer);
     mpu2.dmpGetGravity(&gravity2, &q2);
     mpu2.dmpGetYawPitchRoll(ypr2, &q2, &gravity2);
     mpu2.dmpGetGyro(&gyro2, fifoBuffer);
-    Serial.print("ypr2\t");
+    Serial.print("\t");
     Serial.print(ypr2[0] * 180/M_PI);
     Serial.print("\t");
     Serial.print(ypr2[1] * 180/M_PI);
     Serial.print("\t");
     Serial.print(ypr2[2] * 180/M_PI);
-    Serial.print("\t gyro2\t");
+    Serial.print("\t");
     Serial.print(gyro2.x);
     Serial.print("\t");
     Serial.print(gyro2.y);
