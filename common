@@ -5,7 +5,7 @@ mr = 1
 l1 = 1
 l2 = 1
 l3 = 1
-L
+L = 1
 lc1 = 1
 lc2 = 1
 lc3 = 1
@@ -31,5 +31,7 @@ def total_energy(q, q_dot):
          l2*sin(q[5] + q[1])*(q_dot[5] + q_dot[1]) + 
          lc3*sin(q[5] + q[1] + q[2])*(q_dot[5] + q_dot[1] + q_dot[2]))^2))
     
+  V = -g*(L*(m1 + m2 + m3 + mr)*cos(q[4]) + (lc1*m1 + l1*(m2 + m3))*cos(q[5]) + (lc2*m2 + l2*m3)*cos(q[5] + q[1]) + 
+   lc3*m3*cos(q[5] + q[1] + q[2]))
 
-    return T
+  return T+V
