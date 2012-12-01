@@ -59,22 +59,21 @@ class DampingController(HoldController):
         self.TEbp = TEbp
         self.dtheta_1 = 0.00001
         self.dtheta_2 = 0.00001
+        self.max_theta_1 = pi/2
+        self.max_theta_2 = pi/2
 
 
         self.pdTE = 0.001
         self.ndTE = 0.001
         self.dE = 0.001
         self.TEtarget = minPE+self.dE
-        self.TE = Calculate_Total_Energy
+        self.TE = total_energy(q,q_dot)
         
          
     def control(self, q, q_dot):
-        self.TE = Calculate_Total_Energy 
+        self.TE = total_energy(q,q_dot)
 
-        if (self.TE < self.TEtarget):
-               return "target reached"
-    
-            
+        
         if (self.TE > self.TEbp+self.pdTE):
                self.s1 = -self.s1
                self.s2 = -self.s2
@@ -83,8 +82,11 @@ class DampingController(HoldController):
             
         if(self.TE< self.TEbp-self.ndTE):
                self.TEbp = self.TEbp-self.ndTE;
-
+               
+        if(self.theta_1*s1 < self.max_theta_1)
         self.theta_1 = self.theta_1+self.s1*self.dtheta_1
+
+        if(self.theta_2*s2 < self.max_theta_2)
         self.theta_2 = self.theta_2+self.s2*self.dtheta_2
                
         return generate_command_map(
@@ -92,19 +94,11 @@ class DampingController(HoldController):
             generate_servo_command(self.theta_2, torque_percentage = 0.7),
             generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
-    def is_stable(self, q, q_dot):
-        eps = 0.01
-        
-        # make sure all of the generalized coordinates are no longer moving
-        for q_i_dot in q_dot:
-            if abs(q_i_dot) > eps:
-                return False
-
-        # if we are not moving, make sure we are at the target position
-        if abs(q[0] - self.theta_1) < eps and abs(q[1] - self.theta_2) < eps and abs(q[2] - self.theta_3) < eps:
-            return True
-        else:
-            return False
+    def is_stable(self, q, q_dot):  
+          if (self.TE < self.TEtarget):
+               return True
+          else
+               return False
 
 ### Hold instances below here
 DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, -math.pi/2))
