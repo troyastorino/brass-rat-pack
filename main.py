@@ -15,10 +15,10 @@ if __name__ == "__main__":
         (q, q_dot) = current_state_estimate()
 
         # get the motor commands
-        motor_commands = routine.get_command(q, q_dot)
+        motor_command = routine.get_command(q, q_dot)
 
         # send a command to the motors
-        send_command(motor_commands)
+        send_command(motor_command)
 
         # log the state and the command
-        log(q, q_dot, motor_commands)
+        log(q, q_dot, motor_command)

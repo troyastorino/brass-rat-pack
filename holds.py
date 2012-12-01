@@ -32,7 +32,7 @@ class SimpleHoldController(HoldController):
             generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
     def is_stable(self, q, q_dot):
-        eps = 0.01
+        eps = .01
         
         # make sure all of the generalized coordinates are no longer moving
         for q_i_dot in q_dot:
@@ -46,8 +46,8 @@ class SimpleHoldController(HoldController):
             return False
 
 ### Hold instances below here
-DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, -math.pi/2))
+DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, 0))
 
-IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, 0))
+IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, math.pi/2))
 
                  

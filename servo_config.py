@@ -12,7 +12,7 @@ servo_param = {
         'max_ang': 2.8,
         'min_ang': -2.6},
     
-    3: {'home_encoder': 500}
+    3: {'home_encoder': 120}
 }
 
 dm = USB2Dynamixel_Device('/dev/ttyUSB0')
