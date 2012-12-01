@@ -1,5 +1,6 @@
 from routine import Controller
 from motor_control import generate_command_map, generate_servo_command, generate_torque_command
+from common import total_energy
 
 import math
 
