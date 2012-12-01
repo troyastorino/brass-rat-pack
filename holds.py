@@ -1,6 +1,6 @@
 from routine import Controller
 from motor_control import generate_command_map, generate_servo_command, generate_torque_command
-from common import total_energy
+from common import total_energy,minTE,upright_min_TE
 
 import math
 
@@ -45,20 +45,19 @@ class SimpleHoldController(HoldController):
             return True
         else:
             return False
-
-        
-class DampingController(HoldController):
+     
+class EnergyController(HoldController):
     """Simple illustration of a controller class"""
-    def __init__(self, theta_1, theta_2, theta_3):
+    def __init__(self,TEtarget):
         """theta_1, theta_1, theta_3 are the target angles for the motors"""
         self.theta_1 = theta_1
         self.theta_2 = theta_2
         self.theta_3 = theta_3
         self.s1 = 1
         self.s2 = 0
-        self.TEbp = TEbp
-        self.dtheta_1 = 0.00001
-        self.dtheta_2 = 0.00001
+        self.TEbp = total_energy()
+        self.dtheta_1 = 0.01
+        self.dtheta_2 = 0.01
         self.max_theta_1 = pi/2
         self.max_theta_2 = pi/2
 
@@ -66,11 +65,15 @@ class DampingController(HoldController):
         self.pdTE = 0.001
         self.ndTE = 0.001
         self.dE = 0.001
-        self.TEtarget = minPE+self.dE
-        self.TE = total_energy(q,q_dot)
+        self.TEtarget = TEtarget
+        self.just_initialised = True
         
          
     def control(self, q, q_dot):
+        if self.just_initialised:
+            self.TEbp = total_energy(q,q_dot)
+            self.just_initialised = False
+                    
         self.TE = total_energy(q,q_dot)
 
         
@@ -81,13 +84,13 @@ class DampingController(HoldController):
         
             
         if(self.TE< self.TEbp-self.ndTE):
-               self.TEbp = self.TEbp-self.ndTE;
+            self.TEbp = self.TEbp-self.ndTE;
                
-        if(self.theta_1*s1 < self.max_theta_1)
-        self.theta_1 = self.theta_1+self.s1*self.dtheta_1
+        if(self.theta_1*self.s1 < self.max_theta_1):
+            self.theta_1 = self.theta_1+self.s1*self.dtheta_1
 
-        if(self.theta_2*s2 < self.max_theta_2)
-        self.theta_2 = self.theta_2+self.s2*self.dtheta_2
+        if(self.theta_2*self.s2 < self.max_theta_2):
+            self.theta_2 = self.theta_2+self.s2*self.dtheta_2
                
         return generate_command_map(
             generate_servo_command(self.theta_1, torque_percentage = 0.7),
@@ -95,7 +98,7 @@ class DampingController(HoldController):
             generate_servo_command(self.theta_3, torque_percentage = 0.7))
         
     def is_stable(self, q, q_dot):  
-          if (self.TE < self.TEtarget):
+          if (self.TE < self.TEtarget + self.dE):
                return True
           else
                return False
@@ -105,4 +108,5 @@ DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, -math.pi/2))
 
 IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, 0))
 
-                 
+DAMPING = Hold("Damping Hold",EnergyController(minTE))
+SWING = Hold("Swing",EnergyController(upright_min_TE))

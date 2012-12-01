@@ -1,4 +1,5 @@
-from math import sqrt, cos, sin
+from math import sqrt, cos, sin, pi
+
 
 g = 9.81
 m1 = 0.308
@@ -14,6 +15,8 @@ lc3 = 0.0969
 
 I2 = 1.01e-3
 I3 = 2*4580.56e-7
+
+
 
 def total_energy(q, q_dot):
 
@@ -59,3 +62,6 @@ def total_energy(q, q_dot):
    lc3*m3*cos(q[4] + q[0] + q[1]))
 
   return T+V
+
+minTE = total_energy((0,0,0,0,0),(0,0,0,0,0))
+upright_min_TE = total_energy((0,0,0,0,pi),(0,0,0,0,0))
