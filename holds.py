@@ -53,8 +53,39 @@ class DampingController(HoldController):
         self.theta_1 = theta_1
         self.theta_2 = theta_2
         self.theta_3 = theta_3
+        self.s1 = 1
+        self.s2 = 0
+        self.TEbp = TEbp
+        self.dtheta_1 = 0.00001
+        self.dtheta_2 = 0.00001
+
+
+        self.pdTE = 0.001
+        self.ndTE = 0.001
+        self.dE = 0.001
+        self.TEtarget = minPE+self.dE
+        self.TE = Calculate_Total_Energy
         
+         
     def control(self, q, q_dot):
+        self.TE = Calculate_Total_Energy 
+
+        if (self.TE < self.TEtarget):
+               return "target reached"
+    
+            
+        if (self.TE > self.TEbp+self.pdTE):
+               self.s1 = -self.s1
+               self.s2 = -self.s2
+               self.TEbp=self.TEbp+pdTE
+        
+            
+        if(self.TE< self.TEbp-self.ndTE):
+               self.TEbp = self.TEbp-self.ndTE;
+
+        self.theta_1 = self.theta_1+self.s1*self.dtheta_1
+        self.theta_2 = self.theta_2+self.s2*self.dtheta_2
+               
         return generate_command_map(
             generate_servo_command(self.theta_1, torque_percentage = 0.7),
             generate_servo_command(self.theta_2, torque_percentage = 0.7),
