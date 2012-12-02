@@ -123,9 +123,12 @@ void setup() {
   Serial.println("Initializing I2C devices...");
   mpu=MPU6050(0x69);
   mpu2=MPU6050(0x68);
+  Serial.println("Addresses Assigned");
 
   mpu.initialize();
+  Serial.println("MPU 1 initialised");
   mpu2.initialize();
+  Serial.println("MPU 2 initialised");
 
   // verify connection
   Serial.println("Testing device connections...");
@@ -153,7 +156,7 @@ void setup() {
     mpuIntStatus = mpu.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it
-    Serial.println("DMP ready! Waiting for first interrupt...");
+    Serial.println("DMP ready!");
     dmpReady = true;
 
     // get expected DMP packet size for later comparison
@@ -186,7 +189,7 @@ void setup() {
     mpu2IntStatus = mpu2.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it
-    Serial.println("DMP2 ready! Waiting for first interrupt...");
+    Serial.println("DMP2 ready!");
     dmp2Ready = true;
   } 
   else {
@@ -198,7 +201,6 @@ void setup() {
     Serial.print(devStatus2);
     Serial.println(")");
   }
-
 }
 
 // ================================================================

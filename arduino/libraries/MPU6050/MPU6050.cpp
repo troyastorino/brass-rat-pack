@@ -1639,7 +1639,6 @@ uint8_t MPU6050::getIntStatus() {
 bool MPU6050::getIntFreefallStatus() {
     I2Cdev::readBit(devAddr, MPU6050_RA_INT_STATUS, MPU6050_INTERRUPT_FF_BIT, buffer);
     return buffer[0];
-}
 /** Get Motion Detection interrupt status.
  * This bit automatically sets to 1 when a Motion Detection interrupt has been
  * generated. The bit clears to 0 after the register has been read.
