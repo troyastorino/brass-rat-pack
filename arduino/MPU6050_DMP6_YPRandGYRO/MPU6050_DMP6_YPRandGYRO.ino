@@ -231,13 +231,15 @@ void loop() {
         // (this lets us immediately read more without waiting for an interrupt)
         fifoCount -= packetSize;
 
-
+ if(Serial.available() > 0){
+    readTrigger= Serial.read();
+  }
    // display quaternion values in easy matrix form: w x y z
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
     mpu.dmpGetGyro(&gyro, fifoBuffer);
-    
+     if(readTrigger==1){
     Serial.print(ypr[0] * 180/M_PI);
     Serial.print("\t");
     Serial.print(ypr[1] * 180/M_PI);
@@ -249,7 +251,8 @@ void loop() {
     Serial.print(gyro.y);
     Serial.print("\t");
     Serial.println(gyro.z);
-   
+   readTrigger=0;
+       }
 
 
         // blink LED to indicate activity

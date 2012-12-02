@@ -12,8 +12,6 @@ def initialise_serial():
     time.sleep(1)
     ser.write('\1')
     time.sleep(3)
-    ser.write('\1')
-    time.sleep(5)
     # Clear serial buffer ready for sensor data
     ser.flushInput()
     ser.flushOutput()
