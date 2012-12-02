@@ -1,16 +1,12 @@
 """The module reads from the sensors and the actuators in order to estimate
 the current state.  q"""
 
-import math
+from math import *
 from servo_config import s1, s2, s3
-import arduino_config
+from arduino_config import *
 
 # TODO: actually do estimation of state variables
 
-phi = 0 # ring to platform angle
-phi_dot = 0    
-psi = 0 # arm angle
-psi_dot = 0
 
 def current_state_estimate():
     """Returns the current best estimate of q, q_dot"""
@@ -34,9 +30,10 @@ def current_state_estimate():
     theta_3_dot = s3.read_angvel()
 
     #Calculate phi, psi
-    phi = 0;
-    phi_dot=0;
-    
+    phi = 0
+    phi_dot = 0
+    psi = Roll1 - Roll0
+    psi_dot = Gyrox1
 
     # Package q and q_dot as tuples
     q = theta_1, theta_2, theta_3, phi, psi

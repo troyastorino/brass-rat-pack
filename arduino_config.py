@@ -27,7 +27,7 @@ def IMU_zero():
     ser.write('\1')
     IMU_data_zero_raw = ser.readline();
     IMU_data_zero = map(float, IMU_data_zero_raw.strip().split("\t"))
-    print IMU_data_zero
+    
     return IMU_data_zero
 def initialise_serial():
     # Wait for arduino ready and intialisation to complete
@@ -38,13 +38,24 @@ def initialise_serial():
     ser.flushInput()
     ser.flushOutput()
     IMU_VALS=IMU_zero()
+    global YAW0
+    global PITCH0
+    global ROLL0
+    global GYROX0
+    global GYROY0
+    global GYROZ0
     YAW0=IMU_VALS[0]
     PITCH0=IMU_VALS[1]
     ROLL0=IMU_VALS[2]
     GYROX0=IMU_VALS[3]
     GYROY0=IMU_VALS[4]
     GYROZ0=IMU_VALS[5]
-
+    return YAW0
+    return PITCH0
+    return ROLL0
+    return GYROX0
+    return GYROY0
+    return GYROZ0
 
 
 initialise_serial()
