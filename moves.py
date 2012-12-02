@@ -19,35 +19,45 @@ class Move(object):
     def __init__(self, name, controller):
         self.name = name
         self.controller = controller
-        
-class DeadHangToIronCrossController(MoveController):
-    delta_theta = 0.1
+
+class AngleSetMoveController(MoveController):
+    angle_precision = .2
+    angvel_precision = .01
     
-    def __init__(self):
-        super(DeadHangToIronCrossController, self).__init__(DEAD_HANG, IRON_CROSS)
+    def __init__(self, hold_from, hold_to):
+        super(AngleSetMoveController, self).__init__(hold_from, hold_to)
 
-        # internal variable for keeping track of whether the move is done
-        self.done = False
-
+        self.command_sent = False
+    
     def control(self, q, q_dot):
-        if (q[2] < self.hold_to.controller.theta_3):
-            # increase theta_3 by a small amount
-            theta_3 = q[2] + self.delta_theta
-            
+        if not self.command_sent:
             return generate_command_map(
                 generate_servo_command(self.hold_to.controller.theta_1,
                                        torque_percentage = 0.7),
                 generate_servo_command(self.hold_to.controller.theta_2,
                                        torque_percentage = 0.7),
-                generate_servo_command(theta_3, torque_percentage = 0.7))
+                generate_servo_command(self.hold_to.controller.theta_3,
+                                       torque_percentage = 0.7))
         else:
-            self.done = True
-            return self.hold_to.controller.control(q, q_dot)
+            return generate_command_map(None, None, None)
 
     def is_finished(self, q, q_dot):
-        # normally, might calculate based on q and q_dot, but here just use an
-        # internal variable
-        return self.done
+        angle_tuples = [(q[0], self.hold_to.controller.theta_1),
+                        (q[1], self.hold_to.controller.theta_2),
+                        (q[2], self.hold_to.controller.theta_3)]
 
+        # check if angles are at the goal
+        for angle, goal in angle_tuples:
+            if abs(angle - goal) > self.angle_precision:
+                return False
+
+        # check if velocity is zero
+        for vel in [q_dot[0], q_dot[1], q_dot[2]]:
+            if abs(vel) > self.angvel_precision:
+                return False
+
+        # if here, we have completed
+        return True
+    
 ### Move instances below here
-DEAD_HANG_TO_IRON_CROSS = Move("Dead Hang to Iron Cross", DeadHangToIronCrossController())
+DEAD_HANG_TO_IRON_CROSS = Move("Dead Hang to Iron Cross", AngleSetMoveController(DEAD_HANG, IRON_CROSS))

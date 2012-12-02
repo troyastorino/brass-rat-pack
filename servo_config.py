@@ -12,7 +12,9 @@ servo_param = {
         'max_ang': 2.8,
         'min_ang': -2.6},
     
-    3: {'home_encoder': 120}
+    3: {'home_encoder': 1086,
+        'min_ang': 0,
+        'max_ang': 2.0}
 }
 
 dm = USB2Dynamixel_Device('/dev/ttyUSB0')
@@ -33,8 +35,7 @@ class Extended_Robotis_Servo(Robotis_Servo):
         self.current_torque_limit = 1
         
     def establish_torque_limit(self, limit):
-        """limit should be of the same form as that passed to
-        set_torque_limit"""
+        """limit should be of the same form as that passed to set_torque_limit"""
         if self.current_torque_limit != limit:
             self.set_torque_limit(limit)
             self.current_torque_limit = limit
@@ -44,11 +45,11 @@ class Extended_Robotis_Servo(Robotis_Servo):
         servo mode"""
         # move out of torque control mode
         if self.in_torque_control_mode and not state:
+            self.establish_torque_limit(1)
             self.disable_torque_control_mode()
             self.in_torque_control_mode = False
         # move into torque control mode
-        elif not self.in_torque_control_mode and state:
-            self.establish_torque_limit(1)            
+        elif (not self.in_torque_control_mode) and state:
             self.enable_torque_control_mode()
             self.in_torque_control_mode = True
 
