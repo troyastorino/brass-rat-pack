@@ -1,4 +1,3 @@
-
 // I2C device class (I2Cdev) demonstration Arduino sketch for MPU6050 class using DMP (MotionApps v2.0)
 // 6/21/2012 by Jeff Rowberg <jeff@rowberg.net>
 // Updates should (hopefully) always be available at https://github.com/jrowberg/i2cdevlib
@@ -36,30 +35,49 @@
  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- 
- 
- 
  THE SOFTWARE.
  ===============================================
  */
-// Libraries
 
+// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
+// is used in I2Cdev.h
 #include "Wire.h"
+
+// I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
+// for both classes must be in the include path of your project
 #include "I2Cdev.h"
+
 #include "MPU6050_6Axis_MotionApps20.h"
+//#include "MPU6050.h" // not necessary if using MotionApps include file
 
-
+// class default I2C address is 0x68
+// specific I2C addresses may be passed as a parameter here
+// AD0 low = 0x68 (default for SparkFun breakout and InvenSense evaluation board)
+// AD0 high = 0x69
 MPU6050 mpu;
 MPU6050 mpu2;
 
 /* =========================================================================
  NOTE: In addition to connection 3.3v, GND, SDA, and SCL, this sketch
- depends on the MPU-6050s' INT pins being connected to the Arduino's
- external interrupt #0 and #1 pins. On the Arduino Uno and Mega 2560, this is
- digital I/O pins 2 and 3.
+ depends on the MPU-6050's INT pin being connected to the Arduino's
+ external interrupt #0 pin. On the Arduino Uno and Mega 2560, this is
+ digital I/O pin 2.
+ * ========================================================================= */
+
+/* =========================================================================
+ NOTE: Arduino v1.0.1 with the Leonardo board generates a compile error
+ when using Serial.write(buf, len). The Teapot output uses this method.
+ The solution requires a modification to the Arduino USBAPI.h file, which
+ is fortunately simple, but annoying. This will be fixed in the next IDE
+ release. For more info, see these links:
+ 
+ http://arduino.cc/forum/index.php/topic,109987.0.html
+ http://code.google.com/p/arduino/issues/detail?id=958
  * ========================================================================= */
 
 
+#define LED_PIN 13 // (Arduino is 13, Teensy is 11, Teensy++ is 6)
+bool blinkState = false;
 
 // MPU control/status vars
 bool dmpReady = false; // set true if DMP init was successful
@@ -87,9 +105,12 @@ float euler[3]; // [psi, theta, phi] Euler angle container
 float euler2[3]; // [psi, theta, phi] Euler angle container
 float ypr[3]; // [yaw, pitch, roll] yaw/pitch/roll container and gravity vector
 float ypr2[3]; // [yaw, pitch, roll] yaw/pitch/roll container and gravity vector
-
-// Serial request var
 int readTrigger=0;
+
+// packet structure for InvenSense teapot demo
+uint8_t teapotPacket[14] = { 
+  '$', 0x02, 0,0, 0,0, 0,0, 0,0, 0x00, 0x00, '\r', '\n' };
+
 
 
 // ================================================================
@@ -97,14 +118,13 @@ int readTrigger=0;
 // ================================================================
 
 volatile bool mpuInterrupt = false; // indicates whether MPU interrupt pin has gone high
-volatile bool mpu2Interrupt = false;
+volatile bool mpu2Interrupt = false; // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
   mpuInterrupt = true;
 }
 void dmp2DataReady() {
   mpu2Interrupt = true;
 }
-
 
 
 // ================================================================
@@ -116,47 +136,50 @@ void setup() {
   Wire.begin();
 
   // initialize serial communication
+  // (115200 chosen because it is required for Teapot Demo output, but it's
+  // really up to you depending on your project)
   Serial.begin(115200);
-  while (!Serial.available());
+
+  // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3v or Ardunio
+  // Pro Mini running at 3.3v, cannot handle this baud rate reliably due to
+  // the baud timing being too misaligned with processor ticks. You must use
+  // 38400 or slower in these cases, or use some kind of external separate
+  // crystal solution for the UART timer.
 
   // initialize device
-  Serial.println("Initializing I2C devices...");
+  Serial.println(F("Initializing I2C devices..."));
   mpu=MPU6050(0x69);
   mpu2=MPU6050(0x68);
-  Serial.println("Addresses Assigned");
-
   mpu.initialize();
-  Serial.println("MPU 1 initialised");
   mpu2.initialize();
-  Serial.println("MPU 2 initialised");
 
   // verify connection
-  Serial.println("Testing device connections...");
-  Serial.println(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-
+  Serial.println(F("Testing device connections..."));
+  Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  Serial.println(mpu2.testConnection() ? F("MPU6050 2 connection successful") : F("MPU6050 2 connection failed"));
   // wait for ready
-  Serial.println("\nSend any character to begin DMP programming and demo: ");
+  Serial.println(F("\nSend any character to begin DMP programming and demo: "));
   while (Serial.available() && Serial.read()); // empty buffer
   while (!Serial.available()); // wait for data
   while (Serial.available() && Serial.read()); // empty buffer again
 
-  // load and configure DMP1
-  Serial.println("Initializing DMP1...");
+  // load and configure the DMP
+  Serial.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
-
+  devStatus2 = mpu2.dmpInitialize();
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
     // turn on the DMP, now that it's ready
-    Serial.println("Enabling DMP1...");
+    Serial.println(F("Enabling DMP..."));
     mpu.setDMPEnabled(true);
 
     // enable Arduino interrupt detection
-    Serial.println("Enabling interrupt detection (Arduino external interrupt 0)...");
+    Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
     attachInterrupt(0, dmpDataReady, RISING);
     mpuIntStatus = mpu.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it
-    Serial.println("DMP ready!");
+    Serial.println(F("DMP ready! Waiting for first interrupt..."));
     dmpReady = true;
 
     // get expected DMP packet size for later comparison
@@ -167,144 +190,156 @@ void setup() {
     // 1 = initial memory load failed
     // 2 = DMP configuration updates failed
     // (if it's going to break, usually the code will be 1)
-    Serial.print("DMP1 Initialization failed (code ");
+    Serial.print(F("DMP Initialization failed (code "));
     Serial.print(devStatus);
-    Serial.println(")");
+    Serial.println(F(")"));
   }
-
-
-  // load and configure DMP2
-  Serial.println("Initializing DMP2...");
-  devStatus2 = mpu2.dmpInitialize();
-
-  // make sure it worked (returns 0 if so)
   if (devStatus2 == 0) {
     // turn on the DMP, now that it's ready
-    Serial.println("Enabling DMP2...");
+    Serial.println(F("Enabling DMP 2..."));
     mpu2.setDMPEnabled(true);
 
     // enable Arduino interrupt detection
-    Serial.println("Enabling interrupt detection (Arduino external interrupt 1)...");
+    Serial.println(F("Enabling interrupt detection (Arduino external interrupt 0)..."));
     attachInterrupt(1, dmp2DataReady, RISING);
     mpu2IntStatus = mpu2.getIntStatus();
 
     // set our DMP Ready flag so the main loop() function knows it's okay to use it
-    Serial.println("DMP2 ready!");
+    Serial.println(F("DMP 2 ready! Waiting for first interrupt..."));
     dmp2Ready = true;
+
+    
   } 
   else {
     // ERROR!
     // 1 = initial memory load failed
     // 2 = DMP configuration updates failed
     // (if it's going to break, usually the code will be 1)
-    Serial.print("DMP2 Initialization failed (code ");
-    Serial.print(devStatus2);
-    Serial.println(")");
+    Serial.print(F("DMP Initialization failed (code "));
+    Serial.print(devStatus);
+    Serial.println(F(")"));
   }
+  // configure LED for output
+  pinMode(LED_PIN, OUTPUT);
 }
+
+
 
 // ================================================================
 // === MAIN PROGRAM LOOP ===
 // ================================================================
 
 void loop() {
-
-
   // if programming failed, don't try to do anything
   if (!dmpReady || !dmp2Ready) return;
 
   // wait for MPU interrupt or extra packet(s) available
   while (!mpuInterrupt && fifoCount < packetSize && !mpu2Interrupt && fifoCount2 < packetSize) {
-    fifoCount = mpu.getFIFOCount();
+    // other program behavior stuff here
+    // .
+    // .
+    // .
+    // if you are really paranoid you can frequently test in between other
+    // stuff to see if mpuInterrupt is true, and if so, "break;" from the
+    // while() loop to immediately process the MPU data
+    // .
+    // .
+    // .
   }
-  // reset interrupt flags and get INT_STATUS bytes
+
+  // reset interrupt flag and get INT_STATUS byte
   mpuInterrupt = false;
   mpu2Interrupt = false;
   mpuIntStatus = mpu.getIntStatus();
   mpu2IntStatus = mpu2.getIntStatus();
-  // get current FIFO count
 
+  // get current FIFO count
   fifoCount = mpu.getFIFOCount();
   fifoCount2 = mpu2.getFIFOCount();
   // check for overflow (this should never happen unless our code is too inefficient)
-  if (fifoCount == 1024) {
+  if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
     // reset so we can continue cleanly
     mpu.resetFIFO();
-    Serial.println("FIFO overflow!");
-  }
-  if (fifoCount2 == 1024) {
-    // reset so we can continue cleanly
-    mpu2.resetFIFO();
-    Serial.println("FIFO2 overflow!");
+    Serial.println(F("FIFO overflow!"));
+
     // otherwise, check for DMP data ready interrupt (this should happen frequently)
   } 
+  if ((mpu2IntStatus & 0x10) || fifoCount2 == 1024) {
+    // reset so we can continue cleanly
+    mpu2.resetFIFO();
+    Serial.println(F("FIFO 2 overflow!"));
 
-  if(Serial.available()>0){
-    readTrigger= Serial.read();
-  }
+    // otherwise, check for DMP data ready interrupt (this should happen frequently)
+  } 
+  if (mpuIntStatus & 0x02) {
+    // wait for correct available data length, should be a VERY short wait
+    while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
 
-  // wait for correct available data length, should be a VERY short wait
-  while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+    // read a packet from FIFO
+    mpu.getFIFOBytes(fifoBuffer, packetSize);
 
-  // read a packet from FIFO
-  mpu.getFIFOBytes(fifoBuffer, packetSize);
-  mpu.resetFIFO();
+    // track FIFO count here in case there is > 1 packet available
+    // (this lets us immediately read more without waiting for an interrupt)
+    fifoCount -= packetSize;
 
-// Serial output is given in format:
-// ypr1[1]  ypr1[2]  ypr1[3]  gyro1.x  gyro1.y  gyro1.z  ypr2[1]  ypr2[2]  ypr2[3]  gyro2.x  gyro2.y  gyro2.z
-
-  if(readTrigger==1){
+    if(Serial.available() > 0){
+      readTrigger= Serial.read();
+    }
+    // display quaternion values in easy matrix form: w x y z
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
     mpu.dmpGetGyro(&gyro, fifoBuffer);
-    
-    Serial.print(ypr[0] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(ypr[1] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(ypr[2] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(gyro.x);
-    Serial.print("\t");
-    Serial.print(gyro.y);
-    Serial.print("\t");
-    Serial.print(gyro.z);
+    if(readTrigger==1){
+      Serial.print(ypr[0] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(ypr[1] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(ypr[2] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(gyro.x);
+      Serial.print("\t");
+      Serial.print(gyro.y);
+      Serial.print("\t");
+      Serial.println(gyro.z);
+      
+    }
+ if (mpu2IntStatus & 0x02) {
+    // wait for correct available data length, should be a VERY short wait
+    while (fifoCount2 < packetSize) fifoCount2 = mpu2.getFIFOCount();
+
+    // read a packet from FIFO
+    mpu2.getFIFOBytes(fifoBuffer, packetSize);
+
+    // track FIFO count here in case there is > 1 packet available
+    // (this lets us immediately read more without waiting for an interrupt)
+    fifoCount2 -= packetSize;
+
    
-  }
-
-  while (fifoCount2 < packetSize) fifoCount2 = mpu2.getFIFOCount();
-
-  // read a packet from FIFO
-
-  mpu2.getFIFOBytes(fifoBuffer, packetSize);
-  mpu2.resetFIFO();
-
-  if(readTrigger==1){
+    // display quaternion values in easy matrix form: w x y z
     mpu2.dmpGetQuaternion(&q2, fifoBuffer);
     mpu2.dmpGetGravity(&gravity2, &q2);
     mpu2.dmpGetYawPitchRoll(ypr2, &q2, &gravity2);
     mpu2.dmpGetGyro(&gyro2, fifoBuffer);
-    Serial.print("\t");
-    Serial.print(ypr2[0] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(ypr2[1] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(ypr2[2] * 180/M_PI);
-    Serial.print("\t");
-    Serial.print(gyro2.x);
-    Serial.print("\t");
-    Serial.print(gyro2.y);
-    Serial.print("\t");
-    Serial.println(gyro2.z);
-    readTrigger=0;
+    if(readTrigger==1){
+      Serial.print(ypr2[0] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(ypr2[1] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(ypr2[2] * 180/M_PI);
+      Serial.print("\t");
+      Serial.print(gyro2.x);
+      Serial.print("\t");
+      Serial.print(gyro2.y);
+      Serial.print("\t");
+      Serial.println(gyro2.z);
+      readTrigger=0;
+    }
+
+
+    // blink LED to indicate activity
+    blinkState = !blinkState;
+    digitalWrite(LED_PIN, blinkState);
   }
 }
-
-
-
-
-
-
-
-
+}
