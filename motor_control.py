@@ -61,7 +61,9 @@ def send_command(command_map):
 
     # make sure we have command maps for all of the motors
     if motor_1 == None or motor_2 == None or motor_3 == None:
-        raise Exception('In a command map must specify commands for each motor')
+        raise Exception('In a command map must specify commands for each motor. ' +
+                        'If you don\'t want to send a command to the motor, ' +
+                        'specify NO_COMMAND')
 
     # create a list of command-servo tuples
     cmd_list = [(motor_1, s1), (motor_2, s2), (motor_3, s3)]

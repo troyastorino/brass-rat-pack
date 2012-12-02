@@ -5,7 +5,7 @@ from routine_logging import log
 from state_estimation import current_state_estimate
 from motor_control import send_command
 
-routine = Routine(DEAD_HANG, [DEAD_HANG_TO_IRON_CROSS])
+routine = Routine(DEAD_HANG, [DEAD_HANG_TO_IRON_CROSS, IRON_CROSS_TO_DEAD_HANG, SWING])
 
 if __name__ == "__main__":
     print "Starting routine in the hold", routine.init_hold.name

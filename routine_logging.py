@@ -2,6 +2,7 @@ from string import join
 from motor_control import *
 from datetime import datetime
 from os import path
+from motor_control import *
 import logging
 
 FORMAT = '%(relativeCreated)d\t%(message)s'
@@ -30,11 +31,14 @@ def motor_command_string(motor_commands):
     for key in motor_keys:
         cmd = motor_commands[key]
 
-        mode = 0 if cmd.get(CONTROL_MODE_KEY) == SERVO_CONTROL else 1
+        if cmd == NO_COMMAND:
+            vals.extend(['NaN', 'NaN', 'NaN', 'NaN'])
+        else:
+            mode = 0 if cmd.get(CONTROL_MODE_KEY) == SERVO_CONTROL else 1
 
-        vals.extend([mode, cmd.get(THETA_KEY, 'NaN'),
-                     cmd.get(ANGVEL_KEY, 'NaN'), cmd.get(TORQUE_LIMIT_KEY, 'NaN'),
-                     cmd.get(TORQUE_KEY, 'NaN')])
+            vals.extend([mode, cmd.get(THETA_KEY, 'NaN'),
+                         cmd.get(ANGVEL_KEY, 'NaN'), cmd.get(TORQUE_LIMIT_KEY, 'NaN'),
+                         cmd.get(TORQUE_KEY, 'NaN')])
 
     vals = map(lambda(x): 'Nan' if x == None else x, vals)
     

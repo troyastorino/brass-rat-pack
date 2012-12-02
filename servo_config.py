@@ -12,7 +12,7 @@ servo_param = {
         'max_ang': 2.8,
         'min_ang': -2.6},
     
-    3: {'home_encoder': 1086,
+    3: {'home_encoder': 1106,
         'min_ang': 0,
         'max_ang': 2.0}
 }
