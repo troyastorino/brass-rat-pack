@@ -7,9 +7,9 @@ import arduino_config
 
 # TODO: actually do estimation of state variables
 
-phi = 0 # ring to arm angle
+phi = 0 # ring to platform angle
 phi_dot = 0    
-psi = 0 # ring to platform angle
+psi = 0 # arm angle
 psi_dot = 0
 
 def current_state_estimate():
@@ -28,6 +28,9 @@ def current_state_estimate():
     Gyrox2 = IMU_data_import[9]    
     Gyroy2 = IMU_data_import[10]
     Gyroz2 = IMU_data_import[11]
+
+    # read from arduino here!
+        
 
     # read angular positions
     theta_1 = s1.read_angle()

@@ -1,6 +1,7 @@
 from routine import *
 from holds import *
 from moves import *
+from routine_logging import log
 from state_estimation import current_state_estimate
 from motor_control import send_command
 
@@ -13,8 +14,11 @@ if __name__ == "__main__":
         # get the state estimate
         (q, q_dot) = current_state_estimate()
 
-        # get the motor command
+        # get the motor commands
         motor_command = routine.get_command(q, q_dot)
-        
+
         # send a command to the motors
         send_command(motor_command)
+
+        # log the state and the command
+        log(q, q_dot, motor_command)

@@ -16,12 +16,13 @@ class Routine(object):
 
         ## Check to see if the list of moves is consistent
         inconsistent = False
-        if moves[0].controller.hold_from != init_hold:
-            inconsistent = True
-        else:
-            for i in range(1, len(moves)):
-                if moves[i].controller.hold_from != moves[i-1].controller.hold_to:
-                    inconsistent = True
+        if len(moves) > 0:
+            if moves[0].controller.hold_from != init_hold:
+                inconsistent = True
+            else:
+                for i in range(1, len(moves)):
+                    if moves[i].controller.hold_from != moves[i-1].controller.hold_to:
+                        inconsistent = True
         if inconsistent:
             raise Error("The list of moves must be consistent.")
 

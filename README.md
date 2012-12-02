@@ -21,3 +21,10 @@ Where:
 - ypr'n'.['b'] is Yaw (b=1), Pitch (b=2) and Roll (b=3)
 - gyro'n'.'a' is the angular velocity about axis a
 - n indicates which IMU the data is from. 
+
+Connector pin wires
+1 - 12V POWER
+2 - 12V GND
+3 - DYNAMIXEL DATA
+4 - DYNAMIXEL N/C
+5 - DYNAMIXEL GROUND
