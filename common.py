@@ -1,6 +1,5 @@
 from math import sqrt, cos, sin, pi
 
-
 g = 9.81
 m1 = 0.308
 m2 = 0.337
@@ -12,10 +11,27 @@ L = 2
 lc2 = 0.057
 lc3 = 0.0969
 
-
 I2 = 1.01e-3
 I3 = 2*4580.56e-7
 
+def at_angles(desired_thetas, q, q_dot, angle_precision=.1, angvel_precision=.01):
+  """Checks whether the servos are at the desired angles"""
+  angle_tuples = [(q[0], desired_thetas[0]),
+                  (q[1], desired_thetas[0]),
+                  (q[2], desired_thetas[0])]
+  
+  # check if angles are at the goal
+  for angle, goal in angle_tuples:
+    if abs(angle - goal) > angle_precision:
+      return False
+
+  # check if velocity is zero
+  for vel in [q_dot[0], q_dot[1], q_dot[2]]:
+    if abs(vel) > angvel_precision:
+      return False
+
+  # if here, we have completed
+  return True
 
 
 def total_energy(q, q_dot):
