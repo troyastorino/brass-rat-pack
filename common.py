@@ -22,8 +22,9 @@ def at_angles(desired_thetas, q, q_dot, angle_precision=.2, angvel_precision=.01
   
   # check if angles are at the goal
   for angle, goal in angle_tuples:
-    if abs(angle - goal) > angle_precision:
-      return False
+    if goal != None:
+      if abs(angle - goal) > angle_precision:
+        return False
 
   # if angvel_precision is not None
   if angvel_precision:

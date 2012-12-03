@@ -24,20 +24,21 @@ class Move(object):
         self.controller = controller
 
 class AngleSetMoveController(MoveController):
-    def __init__(self, hold_from, hold_to):
+    def __init__(self, hold_from, hold_to, angvel):
         super(AngleSetMoveController, self).__init__(hold_from, hold_to)
 
+        self.angvel = angvel
         self.command_sent = False
     
     def control(self, q, q_dot):
         if not self.command_sent:
             return generate_command_map(
                 generate_servo_command(self.hold_to.controller.theta_1,
-                                       angvel=.5),
+                                       angvel=self.angvel),
                 generate_servo_command(self.hold_to.controller.theta_2,
-                                       angvel=.5),
+                                       angvel=self.angvel),
                 generate_servo_command(self.hold_to.controller.theta_3,
-                                       angvel=.5))
+                                       angvel=self.angvel))
         else:
             return generate_command_map(None, None, None)
 
@@ -63,10 +64,17 @@ class StaticWaypointController(MoveController):
             """Expects a list of value strings in the waypoint file, in the order
             [theta_1, angvel_1, theta_2, angvel_2, theta_3, angvel_1]"""
             line_vals = map(read_float, line)
-            return generate_command_map(
-                generate_servo_command(line_vals[0], angvel=line_vals[1]),
-                generate_servo_command(line_vals[2], angvel=line_vals[3]),
-                generate_servo_command(line_vals[4], angvel=line_vals[5]))
+
+            commands = []
+            for i in range(3):
+                theta = line_vals[2*i]
+
+                if theta == None:
+                    commands.append(NO_COMMAND)
+                else:
+                    commands.append(generate_servo_command(theta, line_vals[2*i+1]))
+                    
+            return generate_command_map(commands[0], commands[1], commands[2])
         
         with open(join('waypoint_files', waypoints_file), 'r') as f:
             lines = map(lambda(line): line.strip().split(','), f.readlines())
@@ -84,14 +92,20 @@ class StaticWaypointController(MoveController):
     def control(self, q, q_dot):
         command = self.commands[self.state]
 
-        if at_angles([command[MOTOR_1_KEY][THETA_KEY],
-                      command[MOTOR_2_KEY][THETA_KEY],
-                      command[MOTOR_3_KEY][THETA_KEY]],
-                     q, q_dot):
+        angles = []
+        for cmd in [command[MOTOR_1_KEY], command[MOTOR_2_KEY], command[MOTOR_3_KEY]]:
+            try:
+                angles.append(cmd[THETA_KEY])
+            except:
+                angles.append(None)
+
+        if at_angles(angles, q, q_dot):
             self.state_command_sent = False
             self.state += 1
             
         if (not self.state_command_sent) and self.state < len(self.commands):
+            self.state_command_sent = True
+            print self.commands[self.state]
             return self.commands[self.state]
         else:
             return generate_command_map(NO_COMMAND, NO_COMMAND, NO_COMMAND)
@@ -177,10 +191,13 @@ class TestSwingMoveController(MoveController):
         return self.state == 4
             
 ### Move instances below here
-DEAD_HANG_TO_IRON_CROSS = Move("Dead Hang to Iron Cross", AngleSetMoveController(DEAD_HANG, IRON_CROSS))
+DEAD_HANG_TO_IRON_CROSS = Move("Dead Hang to Iron Cross", AngleSetMoveController(DEAD_HANG, IRON_CROSS, 10))
 
-IRON_CROSS_TO_DEAD_HANG = Move("Iron Cross to Dead Hang", AngleSetMoveController(IRON_CROSS, DEAD_HANG))
+IRON_CROSS_TO_DEAD_HANG = Move("Iron Cross to Dead Hang", AngleSetMoveController(IRON_CROSS, DEAD_HANG, 1))
+
+#DEAD_HANG_TO_PIKE = Move("Dead hang to pike", AngleSetMoveController(
 
 TEST_SWING = Move("TestSwing", TestSwingMoveController())
 
-TEST_SWING = Move("TestSwing", StaticWaypointController(DEAD_HANG, DEAD_HANG, 'test_swing.points'))
+TEST_SWING = Move("TestSwing", StaticWaypointController(DEAD_HANG, DEAD_HANG, 'swing2.points'))
+

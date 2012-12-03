@@ -2,10 +2,10 @@ from lib_robotis import *
 from math import pi
 
 servo_param = {
-    1: {'home_encoder': 545,
+    1: {'home_encoder': 1484,
         'flipped': True,
         'min_ang': -1.6,
-        'max_ang': 3},
+        'max_ang': 1.3},
 
     2: {'home_encoder': 2302,
         'flipped': True,
@@ -17,7 +17,7 @@ servo_param = {
         'max_ang': 2.5}
 }
 
-dm = USB2Dynamixel_Device('/dev/ttyUSB0')
+dm = USB2Dynamixel_Device('/dev/ttyUSB1')
 
 # extend Robotis_Servo class to have new methods for establishing
 # torque_control_mode and torque_limit. Methods do not send unnecessary commands
