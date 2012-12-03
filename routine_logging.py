@@ -21,7 +21,7 @@ def log(q, q_dot, time, motor_commands):
 
     # combine to one string and log
     logging.info(
-        join([time, q_string, q_dot_string, motor_command_string(motor_commands)],
+        join([str(time), q_string, q_dot_string, motor_command_string(motor_commands)],
              ","))
     
 def motor_command_string(motor_commands):

@@ -31,7 +31,7 @@ NO_COMMAND = 'no_command'
 #              'theta': 0},
 #  'motor_3': {'control_mode': 'torque',
 #              'torque': 14}}
-#h
+#
 # You can also specify the value of a motor's command to be 'no_command'
 #
 # For servo control model, theta and angvel are optional; if not provided,
