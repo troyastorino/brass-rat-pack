@@ -5,7 +5,7 @@ from routine_logging import log
 from state_estimation import current_state_estimate
 from motor_control import send_command
 
-routine = Routine(DEAD_HANG, [DEAD_HANG_TO_IRON_CROSS, IRON_CROSS_TO_DEAD_HANG, DEAD_HANG_PAUSE, TEST_SWING])
+routine = Routine(DEAD_HANG, [DEAD_HANG_TO_IRON_CROSS, IRON_CROSS_TO_DEAD_HANG, DEAD_HANG_PAUSE, DEAD_HANG_TO_PIKE, PIKE_TO_REVERSE_PIKE, REVERSE_PIKE_TO_DEAD_HANG, TEST_SWING])
 # routine = Routine(DEAD_HANG, [TEST_SWING])
 
 if __name__ == "__main__":

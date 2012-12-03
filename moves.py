@@ -227,7 +227,11 @@ DEAD_HANG_TO_IRON_CROSS = Move("Dead Hang to Iron Cross", AngleSetMoveController
 
 IRON_CROSS_TO_DEAD_HANG = Move("Iron Cross to Dead Hang", AngleSetMoveController(IRON_CROSS, DEAD_HANG, 1))
 
-#DEAD_HANG_TO_PIKE = Move("Dead hang to pike", AngleSetMoveController(
+DEAD_HANG_TO_PIKE = Move("Dead hang to pike", AngleSetMoveController(DEAD_HANG, PIKE_POS, 1))
+
+PIKE_TO_REVERSE_PIKE = Move("Pike to reverse pike", AngleSetMoveController(PIKE_POS, REVERSE_PIKE, 4))
+
+REVERSE_PIKE_TO_DEAD_HANG = Move("Reverse pike to dead hang", AngleSetMoveController(REVERSE_PIKE, DEAD_HANG, 4))
 
 TEST_SWING = Move("TestSwing", TestSwingMoveController())
 
