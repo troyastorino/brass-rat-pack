@@ -53,7 +53,7 @@ def generate_command_map(motor_1, motor_2, motor_3):
             MOTOR_2_KEY: motor_2,
             MOTOR_3_KEY: motor_3}
         
-def send_command(command_map):
+def send_command(command_map, blocking=False):
     # get motor commands
     motor_1 = command_map.get(MOTOR_1_KEY)
     motor_2 = command_map.get(MOTOR_2_KEY)
@@ -95,7 +95,7 @@ def send_command(command_map):
                     servo.establish_torque_limit(1)
 
                 # command the servo to move
-                servo.move_angle(theta, angvel=angvel, blocking=False)
+                servo.move_angle(theta, angvel=angvel, blocking=blocking)
 
             elif mode == TORQUE_CONTROL:
                 # if not in torque control mode, switch into it
