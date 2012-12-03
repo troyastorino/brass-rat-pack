@@ -105,7 +105,11 @@ DEAD_HANG = Hold("Dead Hang", SimpleHoldController(0, 0, 0))
 
 IRON_CROSS = Hold("Iron Cross", SimpleHoldController(0, 0, 1.8))
 
-#PIKE_POS = Hold (
+PIKE_POS = Hold ("Pike Position", SimpleHoldController(0, 1.7, 0))
+
+REVERSE_PIKE = Hold ("Reverse Pike", SimpleHoldController(0, -1.7, 0))
+
+
 
 
 # DAMPING = Hold("Damping Hold",EnergyController(minTE))
