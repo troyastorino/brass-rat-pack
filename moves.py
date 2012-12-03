@@ -48,7 +48,7 @@ class AngleSetMoveController(MoveController):
                          q, q_dot, .2, .01)
 
 class StaticWaypointController(MoveController):
-    @static_method
+    @staticmethod
     def read_waypoints_file(waypoints_file):
         """Assumes waypoints_file is inside the folders waypoint_files.
         Returns a list of commands"""
@@ -76,7 +76,7 @@ class StaticWaypointController(MoveController):
         """Assumes waypoints_file is inside the folders waypoint_files"""
         super(StaticWaypointController, self).__init__(hold_from, hold_to)
 
-        self.commands = read_waypoints_file(waypoints_file)
+        self.commands = self.read_waypoints_file(waypoints_file)
 
         self.state = 0
         self.state_command_sent = False
@@ -84,19 +84,20 @@ class StaticWaypointController(MoveController):
     def control(self, q, q_dot):
         command = self.commands[self.state]
 
-        if at_angles([command[MOTOR_1_KEY][THETA_1],
-                      command[MOTOR_1_KEY][THETA_2],
-                      command[MOTOR_1_KEY][THETA_3]]):
+        if at_angles([command[MOTOR_1_KEY][THETA_KEY],
+                      command[MOTOR_2_KEY][THETA_KEY],
+                      command[MOTOR_3_KEY][THETA_KEY]],
+                     q, q_dot):
             self.state_command_sent = False
             self.state += 1
             
-        if not self.state_command_sent:
+        if (not self.state_command_sent) and self.state < len(self.commands):
             return self.commands[self.state]
         else:
             return generate_command_map(NO_COMMAND, NO_COMMAND, NO_COMMAND)
 
     def is_finished(self, q, q_dot):
-        return self.state > commands.length
+        return self.state >= len(self.commands)
 
 class TestSwingMoveController(MoveController):
     @staticmethod
@@ -105,7 +106,7 @@ class TestSwingMoveController(MoveController):
                 'transition_fn': state_transition_fn}
     
     def __init__(self):
-        super(SwingMoveController, self).__init__(DEAD_HANG, DEAD_HANG)
+        super(TestSwingMoveController, self).__init__(DEAD_HANG, DEAD_HANG)
 
         self.state = 0
         
@@ -163,7 +164,6 @@ class TestSwingMoveController(MoveController):
     def control(self, q, q_dot):
         # see if transitioning to the next state
         if self.state_maps[self.state]['transition_fn'](q, q_dot):
-            print 'changing_state'
             self.state += 1
         
         command = self.state_maps[self.state]['command']

@@ -11,15 +11,20 @@ GYROX0=None
 GYROY0=None
 GYROZ0=None
 ser=serial.Serial('/dev/ttyACM0',115200, timeout=1)
- 
-def get_IMU_data():
+
+def read_IMU():
     ser.write('\1')
     time.sleep(0.01)
-    IMU_data_raw = ser.readline();
-    IMU_data = map(float, IMU_data_raw.strip().split("\t"))
-    return IMU_data
+    return ser.readline();
+
+def parse_IMU_data(data):
+    return map(float, data.strip().split("\t"))
+    
+def get_IMU_data():
+    return parse_IMU_data(read_IMU())
 
 def IMU_zero():
+    print "Waiting for IMU values to settle"
     GYRO_settled=False
     init_data=None
     attempts = 0
@@ -40,21 +45,23 @@ def IMU_zero():
 def initialise_dmp():
     initialized = False
     timeouts = 0
-    print "initialising"
+    print "Initialising DMP"
     while not initialized:
         data = None
         try:
             ser.flushInput()
             ser.flushOutput()
             ser.write('\1')
-            data = get_IMU_data()
-            print data
+            data = read_IMU()
+            parse_IMU_data(data)
             initialized = True
         except:
             if data == '':
                 timeouts += 1
             if timeouts > 10:
-                raise Exception('Timed out too many times during initialisation.')
+                raise Exception('Timed out too many times during initialisation. '+
+                                'Reset the Arduino.')
+    print "Successfully initialized DMP!"
 
 def initialise_serial():
     initialise_dmp()

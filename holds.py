@@ -29,9 +29,9 @@ class SimpleHoldController(HoldController):
         
     def control(self, q, q_dot):
         return generate_command_map(
-            generate_servo_command(self.theta_1, torque_percentage = 1),
-            generate_servo_command(self.theta_2, torque_percentage = 1),
-            generate_servo_command(self.theta_3, torque_percentage = 1))
+            generate_servo_command(self.theta_1, angvel=1),
+            generate_servo_command(self.theta_2, angvel=1),
+            generate_servo_command(self.theta_3, angvel=1))
         
     def is_stable(self, q, q_dot):
         eps = 0.2

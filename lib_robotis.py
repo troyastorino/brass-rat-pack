@@ -114,7 +114,7 @@ class Robotis_Servo(object):
             'max_ang': math.radians(180), #'max_ang': 18.5
             'min_ang': math.radians(-180), #'min_ang': -2.613
             'flipped': False,
-            'max_speed': math.radians(100)
+            'max_speed': math.radians(700) # can actually be math.radians(700)
             }
 
         # Error Checking

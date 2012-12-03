@@ -12,12 +12,12 @@ servo_param = {
         'max_ang': 2.8,
         'min_ang': -2.6},
     
-    3: {'home_encoder': 1890,
+    3: {'home_encoder': 1653,
         'min_ang': 0,
-        'max_ang': 4.0}
+        'max_ang': 2.5}
 }
 
-dm = USB2Dynamixel_Device('/dev/ttyUSB1')
+dm = USB2Dynamixel_Device('/dev/ttyUSB0')
 
 # extend Robotis_Servo class to have new methods for establishing
 # torque_control_mode and torque_limit. Methods do not send unnecessary commands

@@ -68,7 +68,9 @@ def send_command(command_map, blocking=False):
     # create a list of command-servo tuples
     cmd_list = [(motor_1, s1), (motor_2, s2), (motor_3, s3)]
 
-    for cmd, servo in cmd_list:
+    
+    for i in range(len(cmd_list)):
+        cmd, servo = cmd_list[i]
         if cmd == NO_COMMAND:
             pass
         else:
@@ -93,9 +95,13 @@ def send_command(command_map, blocking=False):
                     servo.establish_torque_limit(torque_percentage)
                 else:
                     servo.establish_torque_limit(1)
-
+                
                 # command the servo to move
-                servo.move_angle(theta, angvel=angvel, blocking=blocking)
+                try:
+                    servo.move_angle(theta, angvel=angvel, blocking=blocking)
+                except Exception as e:
+                   raise Exception('Failure in moving servo '+ str(i+1) +
+                                   '\n' + str(e))
 
             elif mode == TORQUE_CONTROL:
                 # if not in torque control mode, switch into it
