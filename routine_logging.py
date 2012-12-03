@@ -5,7 +5,7 @@ from os import path
 from motor_control import *
 import logging
 
-FORMAT = '%(relativeCreated)d,%(message)s'
+FORMAT = '%(message)s'
 FILENAME = datetime.now().strftime(path.join('logs','%Y_%m_%d_%H_%M_%s.log'))
 COLUMNS = ['time', 'theta_1', 'theta_2', 'theta_3', 'phi', 'psi', 'theta_1_dot', 'theta_2_dot', 'theta_3_dot', 'phi_dot', 'psi_dot', 'motor_1_mode', 'motor_1_theta', 'motor_1_angvel', 'motor_1_torque_limit', 'motor_1_torque', 'motor_2_mode', 'motor_2_theta', 'motor_2_angvel', 'motor_2_torque_limit', 'motor_2_torque', 'motor_3_mode', 'motor_3_theta', 'motor_3_angvel', 'motor_3_torque_limit', 'motor_3_torque'];
 
@@ -14,14 +14,14 @@ with open(FILENAME, 'w') as f:
 
 logging.basicConfig(filename=FILENAME, format=FORMAT, level=logging.DEBUG)
 
-def log(q, q_dot, motor_commands):
+def log(q, q_dot, time, motor_commands):
     # convert the generalized coordinates into strings
     q_string = join(map(str, q), ",")
     q_dot_string = join(map(str, q_dot), ",")
 
     # combine to one string and log
     logging.info(
-        join([q_string, q_dot_string, motor_command_string(motor_commands)],
+        join([time, q_string, q_dot_string, motor_command_string(motor_commands)],
              ","))
     
 def motor_command_string(motor_commands):

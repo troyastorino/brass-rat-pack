@@ -2,7 +2,7 @@ import sys
 
 class Controller(object):
     """Abstract controller class"""
-    def control(self, q, q_dot):
+    def control(self, q, q_dot, time):
         """Given the generalized state for the system, returns a command_map to be
            sent to the motors."""
         raise NotImplementedError("Must define a control method")
@@ -37,7 +37,7 @@ class Routine(object):
         # indicates whether we have finished the move and are now in the hold phase
         self.in_hold = True
 
-    def _get_hold_command(self, hold, q, q_dot):
+    def _get_hold_command(self, hold, q, q_dot, time):
         """Private method for getting the command while in a hold"""
 
         # check if we are stable in the hold
@@ -55,17 +55,17 @@ class Routine(object):
                 print "Starting move", self.moves[self.current_move_index].name
                 
                 # return the command from the move
-                return self.get_command(q, q_dot)
+                return self.get_command(q, q_dot, time)
         else:
             # if we aren't stable, use the hold controller
-            return hold.controller.control(q, q_dot)
+            return hold.controller.control(q, q_dot, time)
 
-    def get_command(self, q, q_dot):
+    def get_command(self, q, q_dot, time):
         i = self.current_move_index
 
         if i == -1:
             # if i is -1, it means we are in the init hold
-            return self._get_hold_command(self.init_hold, q, q_dot)
+            return self._get_hold_command(self.init_hold, q, q_dot, time)
         else:
             # get the current move from the routine
             current_move = self.moves[i]
@@ -73,7 +73,7 @@ class Routine(object):
             if self.in_hold:
                 # if we are in the hold component of the move, get the command
                 # from the _get_hold_command method
-                return self._get_hold_command(current_move.controller.hold_to, q, q_dot)
+                return self._get_hold_command(current_move.controller.hold_to, q, q_dot, time)
             else:
                 # otherwise, check if the move has finished
                 if current_move.controller.is_finished(q, q_dot):
@@ -82,7 +82,7 @@ class Routine(object):
                     hold = current_move.controller.hold_to
                     print "Completed move, stabilizing in hold", hold.name
                     # return the command from the hold
-                    return self._get_hold_command(hold, q, q_dot)
+                    return self._get_hold_command(hold, q, q_dot, time)
                 else:
                     # if it hasn't, use the controller for the current move
-                    return current_move.controller.control(q, q_dot)
+                    return current_move.controller.control(q, q_dot, time)

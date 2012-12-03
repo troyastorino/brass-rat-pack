@@ -52,6 +52,9 @@ def generate_command_map(motor_1, motor_2, motor_3):
     return {MOTOR_1_KEY: motor_1,
             MOTOR_2_KEY: motor_2,
             MOTOR_3_KEY: motor_3}
+
+def generate_empty_command_map():
+    return generate_command_map(NO_COMMAND, NO_COMMAND, NO_COMMAND)
         
 def send_command(command_map, blocking=False):
     # get motor commands

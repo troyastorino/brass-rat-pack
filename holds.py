@@ -27,7 +27,7 @@ class SimpleHoldController(HoldController):
         self.theta_2 = theta_2
         self.theta_3 = theta_3
         
-    def control(self, q, q_dot):
+    def control(self, q, q_dot, time):
         return generate_command_map(
             generate_servo_command(self.theta_1, angvel=1),
             generate_servo_command(self.theta_2, angvel=1),
@@ -66,7 +66,7 @@ class SimpleHoldController(HoldController):
 #         self.just_initialised = True
         
          
-#     def control(self, q, q_dot):
+#     def control(self, q, q_dot, time):
 #         if self.just_initialised:
 #             self.TEbp = total_energy(q,q_dot)
 #             self.just_initialised = False

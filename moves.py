@@ -30,7 +30,7 @@ class AngleSetMoveController(MoveController):
         self.angvel = angvel
         self.command_sent = False
     
-    def control(self, q, q_dot):
+    def control(self, q, q_dot, time):
         if not self.command_sent:
             return generate_command_map(
                 generate_servo_command(self.hold_to.controller.theta_1,
@@ -89,7 +89,7 @@ class StaticWaypointController(MoveController):
         self.state = 0
         self.state_command_sent = False
 
-    def control(self, q, q_dot):
+    def control(self, q, q_dot, time):
         command = self.commands[self.state]
 
         angles = []
@@ -113,13 +113,45 @@ class StaticWaypointController(MoveController):
     def is_finished(self, q, q_dot):
         return self.state >= len(self.commands)
 
+class Pause(MoveController):
+    """ Controller to pause at a certain hold"""
+    def __init__(self, hold, pause_length):
+        """ Length of pause in seconds"""
+        super(Pause, self).__init__(hold, hold)
+
+        self.pause = pause_length
+        self.start_time = None
+        self.finished = False
+        
+    def control(self, q, q_dot, time):
+        if self.start_time == None:
+            self.start_time = time
+            
+        if time > self.start_time + self.pause:
+            self.finished = True
+        
+        return generate_empty_command_map()
+
+    def is_finished(self, q, q_dot):
+        return self.finished
+
+# class TimedWaypointController(MoveController):
+#     def __init__(self, hold_from, ):
+#         self.start_time = None
+
+#     def control(self, q, q_dot, time):
+#         if self.start_time == None:
+#             self.start_time = time
+
+#     def is_finished
+
 class TestSwingMoveController(MoveController):
     @staticmethod
     def gen_state_map(command_map, state_transition_fn):
         return {'command': command_map,
                 'transition_fn': state_transition_fn}
     
-    def __init__(self):
+    def __init__(self, waypoints_file):
         super(TestSwingMoveController, self).__init__(DEAD_HANG, DEAD_HANG)
 
         self.state = 0
@@ -175,7 +207,7 @@ class TestSwingMoveController(MoveController):
                     generate_servo_command(state_3_thetas[2], angvel=None)),
                              None)}
         
-    def control(self, q, q_dot):
+    def control(self, q, q_dot, time):
         # see if transitioning to the next state
         if self.state_maps[self.state]['transition_fn'](q, q_dot):
             self.state += 1
@@ -201,3 +233,4 @@ TEST_SWING = Move("TestSwing", TestSwingMoveController())
 
 TEST_SWING = Move("TestSwing", StaticWaypointController(DEAD_HANG, DEAD_HANG, 'swing2.points'))
 
+DEAD_HANG_PAUSE = Pause(DEAD_HANG, 5)
